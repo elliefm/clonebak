@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+SOURCE_DIR='/home/ellie/source'
+WORK_DIR='/var/tmp/clonebak'
+DEST_DIR='/tmp/clonebak' # FIXME
+
+function die {
+    code=$1
+    shift
+    echo $* 1>&2
+    exit $code
+}
+
+ts=$(date '+%FT%T')
+work_dir="$WORK_DIR/$ts"
+dest_dir="$DEST_DIR/$ts"
+
+test -d "$work_dir" &&
+    die "working directory already exists. is another instance already running?"
+
+test -d "$dest_dir" &&
+    die "dest directory already exists. is another instance already running?"
+
+mkdir -p "$work_dir" "$dest_dir"
+cd "$work_dir"
+
+repositories=$(find "$SOURCE_DIR" -type d -name .git | sed -e 's/\/\.git$//')
+
+for r in $repositories; do
+    basename=$(basename $r)
+    git clone --no-hardlinks $r $basename
+    tar cfz "$basename.tgz" $basename
+    cp -p "$basename.tgz" $dest_dir
+    # TODO remove the bare clone
+#    rm -fr $basename
+done
