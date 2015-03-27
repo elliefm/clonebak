@@ -1,9 +1,20 @@
 #!/bin/bash
 set -e
 
-SOURCE_DIR='/home/ellie/source'
-WORK_DIR='/var/tmp/clonebak'
-DEST_DIR='/tmp/clonebak' # FIXME
+opt_source_dir="$1"
+opt_dest_dir="$2"
+opt_work_dir=${3:-/var/tmp/clonebak}
+
+function usage {
+    echo Usage: $(basename $0) sourcedir destdir "[workdir]" 1>&2
+    echo "" 1>&2
+    cat <<"EEEEEE" 1>&2
+    sourcedir: a directory containing git repositories
+    destdir:   destination for tar and gzipped clones
+    workdir:   working directory (default: /var/tmp/clonebak)
+EEEEEE
+    exit 1
+}
 
 function die {
     code=$1
@@ -12,20 +23,29 @@ function die {
     exit $code
 }
 
+test -z "$opt_source_dir" && usage
+test -z "$opt_dest_dir" && usage
+test -z "$opt_work_dir" && usage
+
 ts=$(date '+%FT%T')
-work_dir="$WORK_DIR/$ts"
-dest_dir="$DEST_DIR/$ts"
+work_dir="$opt_work_dir/$ts"
+dest_dir="$opt_dest_dir/$ts"
 
 test -d "$work_dir" &&
-    die "working directory already exists. is another instance already running?"
+    die 1 "working directory $work_dir already exists."\
+	"is another instance already running?"
 
 test -d "$dest_dir" &&
-    die "dest directory already exists. is another instance already running?"
+    die 1 "dest directory already exists."\
+	"is another instance already running?"
 
 mkdir -p "$work_dir" "$dest_dir"
 cd "$work_dir"
 
-repositories=$(find "$SOURCE_DIR" -type d -name .git | sed -e 's/\/\.git$//')
+repositories=$(
+    find "$opt_source_dir" -type d -name .git |
+    sed -e 's/\/\.git$//'
+)
 
 for r in $repositories; do
     basename=$(basename $r)
