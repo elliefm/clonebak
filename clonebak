@@ -36,7 +36,7 @@ test -d "$work_dir" &&
 	"is another instance already running?"
 
 test -d "$dest_dir" &&
-    die 1 "dest directory already exists."\
+    die 1 "dest directory $dest_dir already exists."\
 	"is another instance already running?"
 
 mkdir -p "$work_dir" "$dest_dir"
