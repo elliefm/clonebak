@@ -49,7 +49,7 @@ repositories=$(
 
 for r in $repositories; do
     basename=$(basename $r)
-    git clone --no-hardlinks $r $basename
+    git clone --quiet --no-hardlinks $r $basename
     tar cfz "$basename.tgz" $basename
     cp -p "$basename.tgz" $dest_dir
     # TODO remove the bare clone
